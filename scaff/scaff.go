@@ -10,7 +10,8 @@ import (
 	"strings"
 )
 
-var currentDir, err = os.Getwd()
+var workDir, err = os.Getwd()
+var currentDir = path.Dir(workDir)
 var namespaceHome = "namespaces"
 
 var filePaths []string
@@ -27,7 +28,6 @@ func Add(src, namespace string) bool {
 	}
 
 	// Returns the path without the last part <3
-	currentDir = path.Dir(currentDir)
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
 	os.Mkdir(namespaceDir, 0777)
 
@@ -63,7 +63,27 @@ func Add(src, namespace string) bool {
 	return true
 }
 
-func Remove(srcfile, srcdir, namespace string) bool {
+// Remove a whole namespace or a single file/folder.
+func Remove(relPath, namespace string) bool {
+	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+
+	// Check if exists
+	// TODO: You definitely want to (friendly)log to the user if there is no such folder
+	_, err := os.Stat(namespaceDir)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	delPath := path.Join(namespaceDir, relPath)
+	err = os.RemoveAll(delPath)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	// TODO Log what was succesfully deleted
+
 	return true
 }
 

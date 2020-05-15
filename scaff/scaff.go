@@ -1,13 +1,14 @@
 package scaff
 
 import (
-	// "fmt"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
 )
 
 var workDir, err = os.Getwd()
@@ -87,8 +88,50 @@ func Remove(relPath, namespace string) bool {
 	return true
 }
 
-func List(namespace string) string {
-	return "Not implemented"
+func List() {
+	namespaceRoot := path.Join(currentDir, namespaceHome)
+
+	dirs, err := ioutil.ReadDir(namespaceRoot)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	// Init writer
+	// params after stdout - minwidth, tabwidth, padding, padchar, flags
+	w := tabwriter.NewWriter(os.Stdout, 5, 4, 4, ' ', 0)
+	rowInfo := "%s\t%d folders\t%d files"
+
+	// Setup the first rows
+	fmt.Println()
+	fmt.Fprintln(w, "Namespaces\tStats\t")
+	fmt.Fprintln(w, "---\t---\t")
+
+	// Count and show stats
+	for _, dir := range dirs {
+		fileCount, dirCount := 0, 0
+		namespaceDir := path.Join(namespaceRoot, dir.Name())
+		filepath.Walk(namespaceDir, func(pathname string, info os.FileInfo, err error) error {
+			// Don't count namespace itself as folder
+			if pathname == namespaceDir {
+				return nil
+			}
+
+			if info.IsDir() {
+				dirCount += 1
+			} else {
+				fileCount += 1
+			}
+
+			return nil
+		})
+
+		row := fmt.Sprintf(rowInfo, dir.Name(), dirCount, fileCount)
+		fmt.Fprintln(w, row)
+	}
+	w.Flush()
+
+	return
 }
 
 func Show(namespace string) string {

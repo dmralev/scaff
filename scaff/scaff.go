@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 )
 
+// TODO: Refactor - Check notes
 var workDir, err = os.Getwd()
 var currentDir = path.Dir(workDir)
 var namespaceHome = "namespaces"
@@ -47,7 +48,7 @@ func Add(src, namespace string) bool {
 			return nil
 		}
 
-		destDir := path.Join(namespaceDir, relPath)
+		parentDir := path.Join(namespaceDir, relPath)
 
 		contents, err := ioutil.ReadFile(pathname)
 		if err != nil {
@@ -55,7 +56,7 @@ func Add(src, namespace string) bool {
 		}
 
 		// TODO: Copy the permissions
-		err = ioutil.WriteFile(destDir, contents, 0777)
+		err = ioutil.WriteFile(parentDir, contents, 0777)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -90,6 +91,7 @@ func Remove(relPath, namespace string) bool {
 	return true
 }
 
+// List all namespaces along with a short stats
 func List() {
 	namespaceRoot := path.Join(currentDir, namespaceHome)
 
@@ -136,14 +138,62 @@ func List() {
 	return
 }
 
+// Show tree structure of the files in a given namespace
 func Show(namespace string) {
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
 	Tree(namespaceDir, "")
 }
 
-func Use(namespace string) string {
-	// TODO or Get?
-	return "Not implemented"
+// Copy the files from a namespace, to a given directory
+func Get(dest, namespace string) bool {
+	_, err := os.Stat(dest)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+
+	// Returns the path without the last part <3
+	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	_, err = os.Stat(namespaceDir)
+	if err != nil {
+		// TODO: Namespace not found
+		log.Fatal(err)
+		return false
+	}
+
+	filepath.Walk(namespaceDir, func(pathname string, info os.FileInfo, err error) error {
+		relPath := strings.TrimPrefix(pathname, namespaceDir)
+
+		if info.IsDir() {
+			// Try to exclude the root folder
+			if namespaceDir == pathname {
+				return nil
+			}
+
+			newDir := path.Join(dest, relPath)
+			// TODO: Copy the permissions
+			os.Mkdir(newDir, 0777)
+			return nil
+		}
+
+		destDir := path.Join(dest, relPath)
+
+		contents, err := ioutil.ReadFile(pathname)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// TODO: Copy the permissions
+		err = ioutil.WriteFile(destDir, contents, 0777)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return nil
+	})
+
+	// Basically imitate the add functionality
+	return true
 }
 
 func Tree(namespaceDir, prefix string) {

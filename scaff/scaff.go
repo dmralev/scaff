@@ -42,6 +42,7 @@ func Add(src, namespace string) bool {
 			}
 
 			newDir := path.Join(namespaceDir, relPath)
+			// TODO: Copy the permissions
 			os.Mkdir(newDir, 0777)
 			return nil
 		}
@@ -53,6 +54,7 @@ func Add(src, namespace string) bool {
 			log.Fatal(err)
 		}
 
+		// TODO: Copy the permissions
 		err = ioutil.WriteFile(destDir, contents, 0777)
 		if err != nil {
 			log.Fatal(err)
@@ -134,11 +136,40 @@ func List() {
 	return
 }
 
-func Show(namespace string) string {
-	return "Not implemented"
+func Show(namespace string) {
+	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	Tree(namespaceDir, "")
 }
 
 func Use(namespace string) string {
 	// TODO or Get?
 	return "Not implemented"
+}
+
+func Tree(namespaceDir, prefix string) {
+	nodes, err := ioutil.ReadDir(namespaceDir)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	for index, node := range nodes {
+		// Print symbols depending on if the current file is last in the directory or not
+		if index == len(nodes)-1 {
+			fmt.Println(prefix + "└──" + " " + node.Name())
+		} else {
+			fmt.Println(prefix + "├──" + " " + node.Name())
+		}
+
+		// Go deeper if the node
+		// Print symbol if there are more directories or files following it
+		if node.IsDir() {
+			nodeDir := path.Join(namespaceDir, node.Name())
+			if index < len(nodes)-1 {
+				Tree(nodeDir, prefix+"│   ")
+			} else {
+				Tree(nodeDir, prefix+"    ")
+			}
+		}
+	}
 }

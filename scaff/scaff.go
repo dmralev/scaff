@@ -1,6 +1,8 @@
 package scaff
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,8 +14,8 @@ import (
 )
 
 // TODO: Refactor - Check notes
-var workDir, err = os.Getwd()
-var currentDir = path.Dir(workDir)
+var wd, err = os.Getwd()
+var currentDir = path.Dir(wd)
 var namespaceHome = "namespaces"
 
 var filePaths []string
@@ -21,34 +23,53 @@ var filePaths []string
 // Add files to a given namespace. Grab all filepaths from a given source
 // and write their contents into a new files with the same names and folder structure
 // under a common namespace.
-func Add(src, namespace string) bool {
+func Add(src, namespace string) (string, error) {
+	var fileCount int
+	var dirCount int
 
-	_, err := os.Stat(src)
+	srcInfo, err := os.Stat(src)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		errMessage := fmt.Sprintf("Error: %s no such file or directory.", src)
+		return "", errors.New(errMessage)
+	}
+
+	if srcInfo.IsDir() {
+		files, _ := ioutil.ReadDir(src)
+		if len(files) < 1 {
+			return "", errors.New("Error: Chosen directory is empty.")
+		}
 	}
 
 	// Returns the path without the last part <3
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
 	os.Mkdir(namespaceDir, 0777)
+	if err != nil {
+		return "", err
+	}
 
-	filepath.Walk(src, func(pathname string, info os.FileInfo, err error) error {
+	err = filepath.Walk(src, func(pathname string, info os.FileInfo, err error) error {
 		relPath := strings.TrimPrefix(pathname, src)
+		if pathname == src {
+			_, relPath = path.Split(pathname)
+		}
 
 		if info.IsDir() {
-			// Try to exclude the root folder
+			// Exclude the root folder
 			if src == pathname {
 				return nil
 			}
 
-			newDir := path.Join(namespaceDir, relPath)
 			// TODO: Copy the permissions
-			os.Mkdir(newDir, 0777)
+			newDir := path.Join(namespaceDir, relPath)
+			err := os.Mkdir(newDir, 0777)
+			if err != nil {
+				return err
+			}
+			dirCount += 1
 			return nil
 		}
 
-		parentDir := path.Join(namespaceDir, relPath)
+		dest := path.Join(namespaceDir, relPath)
 
 		contents, err := ioutil.ReadFile(pathname)
 		if err != nil {
@@ -56,15 +77,19 @@ func Add(src, namespace string) bool {
 		}
 
 		// TODO: Copy the permissions
-		err = ioutil.WriteFile(parentDir, contents, 0777)
+		err = ioutil.WriteFile(dest, contents, 0777)
 		if err != nil {
 			log.Fatal(err)
 		}
+		fileCount += 1
 
 		return nil
 	})
+	if err != nil {
+		return "", err
+	}
 
-	return true
+	return fmt.Sprintf("%d files and %d directories stored under namespace %s", fileCount, dirCount, namespace), nil
 }
 
 // Remove a whole namespace or a single file/folder.
@@ -92,18 +117,19 @@ func Remove(relPath, namespace string) bool {
 }
 
 // List all namespaces along with a short stats
-func List() {
+func List() string {
 	namespaceRoot := path.Join(currentDir, namespaceHome)
 
 	dirs, err := ioutil.ReadDir(namespaceRoot)
 	if err != nil {
 		log.Fatal(err)
-		return
+		return ""
 	}
 
 	// Init writer
 	// params after stdout - minwidth, tabwidth, padding, padchar, flags
-	w := tabwriter.NewWriter(os.Stdout, 5, 4, 4, ' ', 0)
+	b := bytes.NewBuffer([]byte{})
+	w := tabwriter.NewWriter(b, 5, 4, 4, ' ', 0)
 	rowInfo := "%s\t%d folders\t%d files"
 
 	// Setup the first rows
@@ -135,13 +161,13 @@ func List() {
 	}
 	w.Flush()
 
-	return
+	return b.String()
 }
 
 // Show tree structure of the files in a given namespace
-func Show(namespace string) {
+func Show(namespace string) string {
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
-	Tree(namespaceDir, "")
+	return Tree(namespaceDir, "")
 }
 
 // Copy the files from a namespace, to a given directory
@@ -196,19 +222,20 @@ func Get(dest, namespace string) bool {
 	return true
 }
 
-func Tree(namespaceDir, prefix string) {
+func Tree(namespaceDir, prefix string) string {
+	buffer := bytes.NewBufferString("")
 	nodes, err := ioutil.ReadDir(namespaceDir)
 	if err != nil {
 		log.Fatal(err)
-		return
+		return ""
 	}
 
 	for index, node := range nodes {
 		// Print symbols depending on if the current file is last in the directory or not
 		if index == len(nodes)-1 {
-			fmt.Println(prefix + "└──" + " " + node.Name())
+			fmt.Fprintln(buffer, prefix+"└──"+" "+node.Name())
 		} else {
-			fmt.Println(prefix + "├──" + " " + node.Name())
+			fmt.Fprintln(buffer, prefix+"├──"+" "+node.Name())
 		}
 
 		// Go deeper if the node
@@ -222,4 +249,6 @@ func Tree(namespaceDir, prefix string) {
 			}
 		}
 	}
+
+	return buffer.String()
 }

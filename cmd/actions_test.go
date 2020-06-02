@@ -188,37 +188,38 @@ func TestList(t *testing.T) {
 	clearAdd()
 }
 
-// func TestShow(t *testing.T) {
-// 	// TODO: Needs case for nested directories
-// 	prepareAdd()
-//
-// 	rootCmd.SetArgs([]string{"show", "test"})
-//
-// 	buffer := bytes.NewBufferString("")
-// 	rootCmd.SetOut(buffer)
-//
-// 	rootCmd.Execute()
-//
-// 	testNamespace := path.Join(namespaceHome, "test")
-//
-// 	// Test if all files can be found in the tree string
-// 	// TODO: It can give false positive when there is more than one file with the same name
-// 	namespaceFiles, _ := ioutil.ReadDir(testNamespace)
-// 	for _, file := range namespaceFiles {
-// 		if !strings.Contains(buffer.String(), file.Name()) {
-// 			t.FailNow()
-// 		}
-// 	}
-//
-// 	// Test actual pretty basic Tree formatting by directly calling Tree, no other way for now
-// 	expectedList := scaff.Tree(testNamespace, "")
-// 	if buffer.String() != expectedList {
-// 		t.FailNow()
-// 	}
-//
-// 	// TODO: Use the golang Clean method?
-// 	clearAdd()
-// }
+// Basic test
+func TestShow(t *testing.T) {
+	// TODO: Needs case for nested directories
+	prepareAdd()
+
+	rootCmd.SetArgs([]string{"show", "test"})
+
+	buffer := bytes.NewBufferString("")
+	rootCmd.SetOut(buffer)
+
+	rootCmd.Execute()
+
+	testNamespace := path.Join(namespaceHome, "test")
+
+	// Test if all files can be found in the tree string
+	// TODO: It can give false positive when there is more than one file with the same name
+	namespaceFiles, _ := ioutil.ReadDir(testNamespace)
+	for _, file := range namespaceFiles {
+		if !strings.Contains(buffer.String(), file.Name()) {
+			t.FailNow()
+		}
+	}
+
+	// Test actual pretty basic Tree formatting by directly calling Tree, no other way for now
+	expectedList := scaff.Tree(testNamespace, "")
+	if buffer.String() != expectedList {
+		t.FailNow()
+	}
+
+	// TODO: Use the golang Clean method?
+	clearAdd()
+}
 
 // func TestGet(t *testing.T) {
 // 	Get("/Users/dimitarralev/code/testee", "dimitarralev")

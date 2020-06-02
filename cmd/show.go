@@ -18,33 +18,25 @@ package cmd
 import (
 	"errors"
 	"fmt"
-
 	"github.com/dmralev/scaff/scaff"
 	"github.com/spf13/cobra"
 )
 
-var addCmd = &cobra.Command{
-	Use:   "add [directory|filepath] [namespace]",
-	Short: "Store a file or directory under a single namespace",
-	Long:  `Add expects to receive a path to directory or file, and namespace under which to store the added files.`,
+var showCmd = &cobra.Command{
+	Use:   "show [namespace]",
+	Short: "See the insides of a given namespace in a tree format.",
 	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			return errors.New("Add requires a directory/file and a namespace arguments.")
+		if len(args) != 1 {
+			return errors.New("Show requires a namespace argument only.")
 		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fileOrDir, namespace := args[0], args[1]
-
-		result, err := scaff.Add(fileOrDir, namespace)
-		if err != nil {
-			result = err.Error()
-		}
-
-		fmt.Fprintln(cmd.OutOrStdout(), result)
+		result := scaff.Show(args[0])
+		fmt.Fprintf(cmd.OutOrStdout(), result)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(showCmd)
 }

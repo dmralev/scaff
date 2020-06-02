@@ -16,35 +16,22 @@ limitations under the License.
 package cmd
 
 import (
-	"errors"
 	"fmt"
-
 	"github.com/dmralev/scaff/scaff"
 	"github.com/spf13/cobra"
 )
 
-var addCmd = &cobra.Command{
-	Use:   "add [directory|filepath] [namespace]",
-	Short: "Store a file or directory under a single namespace",
-	Long:  `Add expects to receive a path to directory or file, and namespace under which to store the added files.`,
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 2 {
-			return errors.New("Add requires a directory/file and a namespace arguments.")
-		}
-		return nil
-	},
+var listCmd = &cobra.Command{
+	Use:   "list",
+	Short: "List stored namespaces.",
+	Long: `See a simple rundown with basic information about your namespaces.
+Paths starting with . are excluded for now.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fileOrDir, namespace := args[0], args[1]
-
-		result, err := scaff.Add(fileOrDir, namespace)
-		if err != nil {
-			result = err.Error()
-		}
-
-		fmt.Fprintln(cmd.OutOrStdout(), result)
+		result := scaff.List()
+		fmt.Fprintf(cmd.OutOrStdout(), result)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(addCmd)
+	rootCmd.AddCommand(listCmd)
 }

@@ -27,7 +27,11 @@ var listCmd = &cobra.Command{
 	Long: `See a simple rundown with basic information about your namespaces.
 Paths starting with . are excluded for now.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		result := scaff.List()
+		result, err := scaff.List()
+		if err != nil {
+			result = err.Error()
+		}
+
 		fmt.Fprintf(cmd.OutOrStdout(), result)
 	},
 }

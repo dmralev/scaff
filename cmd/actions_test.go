@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"bytes"
-	"github.com/dmralev/scaff/scaff"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/dmralev/scaff/scaff"
 )
 
 var wd, _ = os.Getwd()
@@ -82,6 +83,7 @@ func TestAddDir(t *testing.T) {
 	clearAdd()
 }
 
+//
 func TestAddValidation(t *testing.T) {
 	dirPath := path.Join(parentDir, "cmd")
 
@@ -109,3 +111,115 @@ func TestAddValidation(t *testing.T) {
 
 	clearAdd()
 }
+
+//
+func TestRemoveValidation(t *testing.T) {
+	prepareAdd()
+	dirPath := path.Join(parentDir, "cmd")
+
+	// Test with single param
+	rootCmd.SetArgs([]string{"remove"})
+	buffer := bytes.NewBufferString("")
+	rootCmd.SetOut(buffer)
+
+	rootCmd.Execute()
+
+	errMessage := "Error: Add requires a directory/file or a namespace argument."
+	if !strings.Contains(buffer.String(), errMessage) {
+		t.Errorf(buffer.String())
+	}
+
+	rootCmd.SetArgs([]string{"remove", dirPath, "test", "mistake", "another", "other"})
+	buffer = bytes.NewBufferString("")
+	rootCmd.SetOut(buffer)
+
+	rootCmd.Execute()
+	if !strings.Contains(buffer.String(), errMessage) {
+		t.Errorf(buffer.String())
+	}
+
+	clearAdd()
+
+	// TODO: Assert files are removed
+}
+
+// TODO Needs research on how to write to stdin when prompted
+func TestRemove(t *testing.T) {
+	// prepareAdd()
+	//
+	// // Test with single file
+	// rootCmd.SetArgs([]string{"remove", "LICENSE", "test"})
+	// outBuffer := bytes.NewBufferString("")
+	// inBuffer := bytes.NewBufferString("")
+	// rootCmd.SetOut(outBuffer)
+	// rootCmd.SetIn(inBuffer)
+	//
+	// inBuffer.WriteString("n")
+	// rootCmd.Execute()
+	// fmt.Println("exec - > ", outBuffer.String())
+	// outBuffer.WriteString("n")
+	// fmt.Println("after write - >", outBuffer.String())
+	//
+	// clearAdd()
+	//
+	// // Test with directory
+	// // rootCmd.SetArgs([]string{"remove"})
+	// // buffer := bytes.NewBufferString("")
+	// // rootCmd.SetOut(buffer)
+	// //
+	// // rootCmd.Execute()
+}
+
+// TODO: Needs one more namespace(nested)
+// func TestList(t *testing.T) {
+// 	PrepareAdd()
+//
+// 	rootCmd.SetArgs([]string{"list"})
+//
+// 	buffer := bytes.NewBufferString("")
+// 	rootCmd.SetOut(buffer)
+//
+// 	rootCmd.Execute()
+// 	fmt.Println(buffer)
+//
+// 	expectedList := ""
+// 	if buffer.String() != expectedList {
+// 		t.FailNow()
+// 	}
+// }
+
+// func TestShow(t *testing.T) {
+// 	// TODO: Needs case for nested directories
+// 	prepareAdd()
+//
+// 	rootCmd.SetArgs([]string{"show", "test"})
+//
+// 	buffer := bytes.NewBufferString("")
+// 	rootCmd.SetOut(buffer)
+//
+// 	rootCmd.Execute()
+//
+// 	testNamespace := path.Join(namespaceHome, "test")
+//
+// 	// Test if all files can be found in the tree string
+// 	// TODO: It can give false positive when there is more than one file with the same name
+// 	namespaceFiles, _ := ioutil.ReadDir(testNamespace)
+// 	for _, file := range namespaceFiles {
+// 		if !strings.Contains(buffer.String(), file.Name()) {
+// 			t.FailNow()
+// 		}
+// 	}
+//
+// 	// Test actual pretty basic Tree formatting by directly calling Tree, no other way for now
+// 	expectedList := scaff.Tree(testNamespace, "")
+// 	if buffer.String() != expectedList {
+// 		t.FailNow()
+// 	}
+//
+// 	// TODO: Use the golang Clean method?
+// 	clearAdd()
+// }
+
+// func TestGet(t *testing.T) {
+// 	Get("/Users/dimitarralev/code/testee", "dimitarralev")
+// }

@@ -40,7 +40,6 @@ func Add(src, namespace string) (string, error) {
 		}
 	}
 
-	// Returns the path without the last part <3
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
 	os.Mkdir(namespaceDir, 0777)
 	if err != nil {
@@ -48,7 +47,13 @@ func Add(src, namespace string) (string, error) {
 	}
 
 	err = filepath.Walk(src, func(pathname string, info os.FileInfo, err error) error {
+		filename := path.Base(pathname)
 		relPath := strings.TrimPrefix(pathname, src)
+
+		if strings.HasPrefix(filename, ".") || strings.HasPrefix(relPath, "/.") {
+			return nil
+		}
+
 		if pathname == src {
 			_, relPath = path.Split(pathname)
 		}

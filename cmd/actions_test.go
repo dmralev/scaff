@@ -170,23 +170,23 @@ func TestRemove(t *testing.T) {
 	// // rootCmd.Execute()
 }
 
-// TODO: Needs one more namespace(nested)
-// func TestList(t *testing.T) {
-// 	PrepareAdd()
-//
-// 	rootCmd.SetArgs([]string{"list"})
-//
-// 	buffer := bytes.NewBufferString("")
-// 	rootCmd.SetOut(buffer)
-//
-// 	rootCmd.Execute()
-// 	fmt.Println(buffer)
-//
-// 	expectedList := ""
-// 	if buffer.String() != expectedList {
-// 		t.FailNow()
-// 	}
-// }
+// Super basic test
+func TestList(t *testing.T) {
+	prepareAdd()
+
+	rootCmd.SetArgs([]string{"list"})
+
+	buffer := bytes.NewBufferString("")
+	rootCmd.SetOut(buffer)
+
+	rootCmd.Execute()
+
+	if !strings.Contains(buffer.String(), "test") {
+		t.FailNow()
+	}
+
+	clearAdd()
+}
 
 // func TestShow(t *testing.T) {
 // 	// TODO: Needs case for nested directories

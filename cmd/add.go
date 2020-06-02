@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// addCmd represents the add command
 var addCmd = &cobra.Command{
 	Use:   "add [directory|filepath] [namespace]",
 	Short: "Store a file or directory under a single namespace",

@@ -23,7 +23,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// removeCmd represents the remove command
 var removeCmd = &cobra.Command{
 	Use:   "remove [directory|filepath] [namespace]",
 	Short: "Remove a filepath or namespace.",

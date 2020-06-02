@@ -179,12 +179,11 @@ func List() string {
 
 	// Count and show stats
 	for _, dir := range dirs {
-		fileCount, dirCount := 0, 0
-		namespaceDir := path.Join(namespaceRoot, dir.Name())
 		if strings.HasPrefix(dir.Name(), ".") {
 			continue
 		}
-
+		fileCount, dirCount := 0, 0
+		namespaceDir := path.Join(namespaceRoot, dir.Name())
 		filepath.Walk(namespaceDir, func(pathname string, info os.FileInfo, err error) error {
 			// Don't count namespace itself as folder
 			if pathname == namespaceDir {

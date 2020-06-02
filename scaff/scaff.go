@@ -1,6 +1,7 @@
 package scaff
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"fmt"
@@ -93,27 +94,66 @@ func Add(src, namespace string) (string, error) {
 }
 
 // Remove a whole namespace or a single file/folder.
-func Remove(relPath, namespace string) bool {
+func Remove(delPath, namespace string) (string, error) {
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	delPath = path.Join(namespaceDir, delPath)
 
-	// Check if exists
-	// TODO: You definitely want to (friendly)log to the user if there is no such folder
 	_, err := os.Stat(namespaceDir)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		errMessage := fmt.Sprintf("Error: Namespace %s not found", namespace)
+		return "", errors.New(errMessage)
 	}
 
-	delPath := path.Join(namespaceDir, relPath)
-	err = os.RemoveAll(delPath)
+	_, err = os.Stat(delPath)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		errMessage := fmt.Sprintf("Error: Path not found in %s namespace", namespace)
+		return "", errors.New(errMessage)
 	}
 
-	// TODO Log what was succesfully deleted
+	// TODO: Extract into func
+	fileCount, dirCount := 0, 0
+	filepath.Walk(delPath, func(pathname string, info os.FileInfo, err error) error {
+		// Don't count namespace itself as folder
+		if pathname == namespaceDir {
+			return nil
+		}
 
-	return true
+		if info.IsDir() {
+			dirCount += 1
+		} else {
+			fileCount += 1
+		}
+
+		return nil
+	})
+	if namespaceDir == delPath {
+		fmt.Printf("Removing namespace %s, are you sure? [y/n]\n", namespace)
+	} else {
+		fmt.Printf("About to remove %d files and %d directories from namespace %s, are you sure? [y/n]\n", fileCount, dirCount, namespace)
+	}
+
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	input := scanner.Text()
+
+	switch input {
+	case "y":
+		err = os.RemoveAll(delPath)
+		if err != nil {
+			return "", err
+		}
+
+		if namespaceDir == delPath {
+			return fmt.Sprintf("Removed namespace %s.", namespace), nil
+		}
+
+		return fmt.Sprintf("Removed %d files and %d directories from namespace %s.", fileCount, dirCount, namespace), nil
+	case "n":
+		return "Remove cancelled.", nil
+	default:
+		fmt.Println(input)
+		return "Unexpected input, remove cancelled.", nil
+	}
 }
 
 // List all namespaces along with a short stats

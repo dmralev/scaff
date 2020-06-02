@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -74,13 +73,13 @@ func Add(src, namespace string) (string, error) {
 
 		contents, err := ioutil.ReadFile(pathname)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		// TODO: Copy the permissions
 		err = ioutil.WriteFile(dest, contents, 0777)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		fileCount += 1
 
@@ -157,13 +156,12 @@ func Remove(delPath, namespace string) (string, error) {
 }
 
 // List all namespaces along with a short stats
-func List() string {
+func List() (string, error) {
 	namespaceRoot := path.Join(currentDir, namespaceHome)
 
 	dirs, err := ioutil.ReadDir(namespaceRoot)
 	if err != nil {
-		log.Fatal(err)
-		return ""
+		return "", err
 	}
 
 	// Init writer
@@ -204,32 +202,37 @@ func List() string {
 	}
 	w.Flush()
 
-	return b.String()
+	return b.String(), nil
 }
 
 // Show tree structure of the files in a given namespace
-func Show(namespace string) string {
+func Show(namespace string) (string, error) {
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
-	return Tree(namespaceDir, "")
+
+	tree, err := Tree(namespaceDir, "")
+	if err != nil {
+		return "", err
+	}
+
+	return tree, nil
 }
 
 // Copy the files from a namespace, to a given directory
-func Get(dest, namespace string) bool {
+func Get(dest, namespace string) (string, error) {
 	_, err := os.Stat(dest)
 	if err != nil {
-		log.Fatal(err)
-		return false
+		return "", err
 	}
 
 	// Returns the path without the last part <3
 	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
 	_, err = os.Stat(namespaceDir)
 	if err != nil {
-		// TODO: Namespace not found
-		log.Fatal(err)
-		return false
+		errMessage := fmt.Sprintf("Error: Namespace %s not found", namespace)
+		return "", errors.New(errMessage)
 	}
 
+	dirCount, fileCount := 0, 0
 	filepath.Walk(namespaceDir, func(pathname string, info os.FileInfo, err error) error {
 		relPath := strings.TrimPrefix(pathname, namespaceDir)
 
@@ -242,6 +245,8 @@ func Get(dest, namespace string) bool {
 			newDir := path.Join(dest, relPath)
 			// TODO: Copy the permissions
 			os.Mkdir(newDir, 0777)
+			dirCount += 1
+
 			return nil
 		}
 
@@ -249,28 +254,27 @@ func Get(dest, namespace string) bool {
 
 		contents, err := ioutil.ReadFile(pathname)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
+		fileCount += 1
 
 		// TODO: Copy the permissions
 		err = ioutil.WriteFile(destDir, contents, 0777)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		return nil
 	})
 
-	// Basically imitate the add functionality
-	return true
+	return fmt.Sprintf("%d files and %d directories copied from namespace %s", fileCount, dirCount, namespace), nil
 }
 
-func Tree(namespaceDir, prefix string) string {
+func Tree(namespaceDir, prefix string) (string, error) {
 	buffer := bytes.NewBufferString("")
 	nodes, err := ioutil.ReadDir(namespaceDir)
 	if err != nil {
-		log.Fatal(err)
-		return ""
+		return "", err
 	}
 
 	for index, node := range nodes {
@@ -293,5 +297,5 @@ func Tree(namespaceDir, prefix string) string {
 		}
 	}
 
-	return buffer.String()
+	return buffer.String(), nil
 }

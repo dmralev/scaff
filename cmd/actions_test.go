@@ -212,7 +212,7 @@ func TestShow(t *testing.T) {
 	}
 
 	// Test actual pretty basic Tree formatting by directly calling Tree, no other way for now
-	expectedList := scaff.Tree(testNamespace, "")
+	expectedList, _ := scaff.Tree(testNamespace, "")
 	if buffer.String() != expectedList {
 		t.FailNow()
 	}

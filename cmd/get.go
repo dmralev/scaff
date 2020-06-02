@@ -18,29 +18,35 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"os"
+
 	"github.com/dmralev/scaff/scaff"
 	"github.com/spf13/cobra"
 )
 
-var showCmd = &cobra.Command{
-	Use:   "show [namespace]",
-	Short: "See the insides of a given namespace in a tree format.",
+// getCmd represents the get command
+var getCmd = &cobra.Command{
+	Use:   "get [namespace]",
+	Short: "Copy files from a given namespace to the current directory.",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
-			return errors.New("Show requires a namespace argument only.")
+			return errors.New("Get requires a namespace argument only.")
 		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		result, err := scaff.Show(args[0])
+		wd, _ := os.Getwd()
+		namespace := args[0]
+
+		result, err := scaff.Get(wd, namespace)
 		if err != nil {
 			result = err.Error()
 		}
 
-		fmt.Fprintf(cmd.OutOrStdout(), result)
+		fmt.Fprintln(cmd.OutOrStdout(), result)
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(showCmd)
+	rootCmd.AddCommand(getCmd)
 }

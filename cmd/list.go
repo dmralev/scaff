@@ -24,7 +24,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List stored namespaces",
+	Short: "List stored namespaces.",
 	Long: `See a simple rundown with basic information about your namespaces.
 Paths starting with . are excluded for now.`,
 	Run: func(cmd *cobra.Command, args []string) {

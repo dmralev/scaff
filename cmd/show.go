@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/dmralev/scaff/scaff"
 	"github.com/spf13/cobra"
@@ -25,6 +26,12 @@ import (
 var showCmd = &cobra.Command{
 	Use:   "show [namespace]",
 	Short: "See the insides of a given namespace in a tree format.",
+	Args: func(cmd *cobra.Command, args []string) error {
+		if len(args) != 1 {
+			return errors.New("Show requires a namespace argument only.")
+		}
+		return nil
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		result := scaff.Show(args[0])
 		fmt.Fprintf(cmd.OutOrStdout(), result)

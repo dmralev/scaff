@@ -145,9 +145,9 @@ func Remove(delPath, namespace string) (string, error) {
 
 		if namespaceDir == delPath {
 			return fmt.Sprintf("Removed namespace %s.", namespace), nil
-		} else {
-			return fmt.Sprintf("Removed %d files and %d directories from namespace %s.", fileCount, dirCount, namespace), nil
 		}
+
+		return fmt.Sprintf("Removed %d files and %d directories from namespace %s.", fileCount, dirCount, namespace), nil
 	case "n":
 		return "Remove cancelled.", nil
 	default:

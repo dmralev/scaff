@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	homedir "github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"path"
@@ -13,12 +14,25 @@ import (
 	"text/tabwriter"
 )
 
-// TODO: Refactor - Check notes
-var wd, err = os.Getwd()
-var currentDir = path.Dir(wd)
-var namespaceHome = "namespaces"
-
 var filePaths []string
+
+var home, _ = homedir.Dir()
+var namespaceHome = path.Join(home, ".scaff", "namespaces")
+
+// Initialize base settings
+func Init() error {
+	var err error
+
+	_, missingOrOther := os.Stat(namespaceHome)
+	if missingOrOther != nil {
+		err = os.MkdirAll(namespaceHome, 0777)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // Add files to a given namespace. Grab all filepaths from a given source
 // and write their contents into a new files with the same names and folder structure
@@ -40,7 +54,7 @@ func Add(src, namespace string) (string, error) {
 		}
 	}
 
-	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	namespaceDir := path.Join(namespaceHome, namespace)
 	os.Mkdir(namespaceDir, 0777)
 	if err != nil {
 		return "", err
@@ -99,7 +113,7 @@ func Add(src, namespace string) (string, error) {
 
 // Remove a whole namespace or a single file/folder.
 func Remove(delPath, namespace string) (string, error) {
-	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	namespaceDir := path.Join(namespaceHome, namespace)
 	delPath = path.Join(namespaceDir, delPath)
 
 	_, err := os.Stat(namespaceDir)
@@ -162,7 +176,7 @@ func Remove(delPath, namespace string) (string, error) {
 
 // List all namespaces along with a short stats
 func List() (string, error) {
-	namespaceRoot := path.Join(currentDir, namespaceHome)
+	namespaceRoot := path.Join(namespaceHome)
 
 	dirs, err := ioutil.ReadDir(namespaceRoot)
 	if err != nil {
@@ -212,7 +226,7 @@ func List() (string, error) {
 
 // Show tree structure of the files in a given namespace
 func Show(namespace string) (string, error) {
-	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	namespaceDir := path.Join(namespaceHome, namespace)
 
 	tree, err := Tree(namespaceDir, "")
 	if err != nil {
@@ -230,7 +244,7 @@ func Get(dest, namespace string) (string, error) {
 	}
 
 	// Returns the path without the last part <3
-	namespaceDir := path.Join(currentDir, namespaceHome, namespace)
+	namespaceDir := path.Join(namespaceHome, namespace)
 	_, err = os.Stat(namespaceDir)
 	if err != nil {
 		errMessage := fmt.Sprintf("Error: Namespace %s not found", namespace)

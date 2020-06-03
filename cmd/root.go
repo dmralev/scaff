@@ -17,11 +17,9 @@ package cmd
 
 import (
 	"fmt"
-	// homedir "github.com/mitchellh/go-homedir"
+	"github.com/dmralev/scaff/scaff"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"os"
-	"path"
 )
 
 var cfgFile string
@@ -49,6 +47,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
+	err := scaff.Init()
+	if err != nil {
+		fmt.Fprintln(rootCmd.OutOrStdout(), err.Error())
+	}
+
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
@@ -58,22 +61,4 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	wd, _ := os.Getwd()
-	parent := path.Dir(wd)
-	cfgFile := path.Join(parent, ".scaff.yaml")
-
-	// fmt.Println(parent)
-
-	viper.SetConfigFile(cfgFile)
-
-	// viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	// if err := viper.ReadInConfig(); err == nil {
-	// err := viper.ReadInConfig()
-	// fmt.Println(err)
-	// hey := viper.Get("namespaceHome")
-	// fmt.Println(hey)
-	// fmt.Println("Using config file:", viper.ConfigFileUsed())
-	// }
 }

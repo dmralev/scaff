@@ -19,10 +19,21 @@ jobs:
         go-version: ^1.13
       id: go
 
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+    - name: setup env
+      run: |
+        echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
+        echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
+      shell: bash
+
+    - uses: actions/checkout@v1
       with:
-        path: /home/runner/go/src/github.com/${{ github.repository }}
+        ref: master
+        path: src/github.com/${{ github.repository }}
+    - name: echo env
+      run: |
+        echo $(go env GOPATH)
+        echo $(go env GOROOT)
+        echo $PATH
 
     - name: go get
       run: |

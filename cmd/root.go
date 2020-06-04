@@ -27,13 +27,10 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "scaff",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`}
+	Short: "Easily manage files you often need for starting projects. A glorified copy-paste",
+	Long: `Store the files you use to bootstrap projects(docs, design notes, READMEs, common starter dependencies etc)
+in one place and access them quickly when they are needed.`,
+}
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.

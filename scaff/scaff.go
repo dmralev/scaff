@@ -179,9 +179,7 @@ func Remove(delPath, namespace string) (string, error) {
 
 // List all namespaces along with a short stats
 func List() (string, error) {
-	namespaceRoot := path.Join(namespaceHome)
-
-	dirs, err := ioutil.ReadDir(namespaceRoot)
+	dirs, err := ioutil.ReadDir(namespaceHome)
 	if err != nil {
 		return "", err
 	}
@@ -203,7 +201,7 @@ func List() (string, error) {
 			continue
 		}
 		fileCount, dirCount := 0, 0
-		namespaceDir := path.Join(namespaceRoot, dir.Name())
+		namespaceDir := path.Join(namespaceHome, dir.Name())
 		filepath.Walk(namespaceDir, func(pathname string, info os.FileInfo, err error) error {
 			// Don't count namespace itself as folder
 			if pathname == namespaceDir {

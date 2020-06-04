@@ -18,23 +18,10 @@ jobs:
       with:
         go-version: ^1.13
       id: go
-      
-    - name: setup env
-      run: |
-        echo "::set-env name=GOPATH::$(dirname $GITHUB_WORKSPACE)"
-        echo "::add-path::$(dirname $GITHUB_WORKSPACE)/bin"
-      shell: bash
 
-    - uses: actions/checkout@v1
-      with:
-        ref: add
-        path: src/github.com/${{ github.repository }}
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
 
-    - name: echo env
-      run: |
-        echo $(go env GOPATH)
-        echo $(go env GOROOT)
-        echo $PATH
     - name: go get
       run: |
         git config --global url."https://${{secrets.GITHUB_TOKEN}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"

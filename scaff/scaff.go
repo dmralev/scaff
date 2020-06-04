@@ -16,16 +16,19 @@ import (
 
 var filePaths []string
 
-var home, _ = homedir.Dir()
+var home, homeErr = homedir.Dir()
 var namespaceHome = path.Join(home, ".scaff", "namespaces")
 
 // Initialize base settings
+// Create the needed directories for storing namespaces
 func Init() error {
-	var err error
+	if homeErr != nil {
+		return homeErr
+	}
 
 	_, missingOrOther := os.Stat(namespaceHome)
 	if missingOrOther != nil {
-		err = os.MkdirAll(namespaceHome, 0777)
+		err := os.MkdirAll(namespaceHome, 0777)
 		if err != nil {
 			return err
 		}

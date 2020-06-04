@@ -36,7 +36,9 @@ jobs:
         echo $(go env GOROOT)
         echo $PATH
     - name: go get
-      run: go get -v -u ./...
+      run: |
+        git config --global url."https://${{secrets.GITHUB_TOKEN}}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
+        go get -v -u ./...
 
     - name: Test
       run: go test ./... -v .

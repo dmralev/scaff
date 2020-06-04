@@ -26,9 +26,9 @@ func Init() error {
 		return homeErr
 	}
 
-	_, missingOrOther := os.Stat(namespaceHome)
+	info, missingOrOther := os.Stat(namespaceHome)
 	if missingOrOther != nil {
-		err := os.MkdirAll(namespaceHome, 0777)
+		err := os.MkdirAll(namespaceHome, info.Mode().Perm())
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func Add(src, namespace string) (string, error) {
 	}
 
 	namespaceDir := path.Join(namespaceHome, namespace)
-	os.Mkdir(namespaceDir, 0777)
+	os.Mkdir(namespaceDir, srcInfo.Mode().Perm())
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +83,7 @@ func Add(src, namespace string) (string, error) {
 
 			// TODO: Copy the permissions
 			newDir := path.Join(namespaceDir, relPath)
-			err := os.Mkdir(newDir, 0777)
+			err := os.Mkdir(newDir, info.Mode().Perm())
 			if err != nil {
 				return err
 			}
@@ -99,7 +99,7 @@ func Add(src, namespace string) (string, error) {
 		}
 
 		// TODO: Copy the permissions
-		err = ioutil.WriteFile(dest, contents, 0777)
+		err = ioutil.WriteFile(dest, contents, info.Mode().Perm())
 		if err != nil {
 			return err
 		}
@@ -264,7 +264,7 @@ func Get(dest, namespace string) (string, error) {
 
 			newDir := path.Join(dest, relPath)
 			// TODO: Copy the permissions
-			os.Mkdir(newDir, 0777)
+			os.Mkdir(newDir, info.Mode().Perm())
 			dirCount += 1
 
 			return nil
@@ -279,7 +279,7 @@ func Get(dest, namespace string) (string, error) {
 		fileCount += 1
 
 		// TODO: Copy the permissions
-		err = ioutil.WriteFile(destDir, contents, 0777)
+		err = ioutil.WriteFile(destDir, contents, info.Mode().Perm())
 		if err != nil {
 			return err
 		}

@@ -5,6 +5,10 @@
 *.so
 *.dylib
 
+# Swap files
+*.swp
+*.swa
+
 # Test binary, built with `go test -c`
 *.test
 

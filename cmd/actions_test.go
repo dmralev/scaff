@@ -9,14 +9,20 @@ import (
 	"testing"
 
 	"github.com/dmralev/scaff/scaff"
+	homedir "github.com/mitchellh/go-homedir"
 )
 
+// Quickfix
 var wd, _ = os.Getwd()
 var parentDir = path.Dir(wd)
-var namespaceHome = path.Join(parentDir, "namespaces")
-var testNamespace = path.Join(namespaceHome, "test")
+
+var home, homeErr = homedir.Dir()
+var namespaceHome = path.Join(home, ".scaff", "namespaces")
 
 func prepareAdd() {
+	// Quickfix
+	scaff.Init()
+
 	// TODO: Needs nested directories
 	testFile := path.Join(parentDir, "LICENSE")
 	scaff.Add(testFile, "test")

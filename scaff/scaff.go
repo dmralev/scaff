@@ -26,9 +26,9 @@ func Init() error {
 		return homeErr
 	}
 
-	info, missingOrOther := os.Stat(namespaceHome)
+	_, missingOrOther := os.Stat(namespaceHome)
 	if missingOrOther != nil {
-		err := os.MkdirAll(namespaceHome, info.Mode().Perm())
+		err := os.MkdirAll(namespaceHome, 0777)
 		if err != nil {
 			return err
 		}

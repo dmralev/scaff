@@ -24,7 +24,7 @@ import (
 
 var showCmd = &cobra.Command{
 	Use:   "show [namespace]",
-	Short: "See the insides of a given namespace in a tree format.",
+	Short: "See the insides of a given namespace in a tree format",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("Show requires a namespace argument only.")

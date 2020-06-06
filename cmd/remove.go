@@ -25,7 +25,7 @@ import (
 
 var removeCmd = &cobra.Command{
 	Use:   "remove [directory|filepath] [namespace]",
-	Short: "Remove a filepath or namespace.",
+	Short: "Remove a filepath or namespace",
 	Long: `Remove given directory or filepath from a namespace, or the namespace itself.
 If the command receives one argument, it is assumed that it has received namespace to delete.
 Example:

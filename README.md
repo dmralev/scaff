@@ -1,5 +1,5 @@
 # Scaff
-Store the files you use to bootstrap projects(docs, design notes, READMEs, common starter dependencies etc) in one place and access them quickly when they are needed.
+Store the files you use to bootstrap projects(docs, design notes, READMEs, common starter dependencies) in one place and access them quickly when they are needed.
 
 # Installation
 ### Using go get
@@ -14,11 +14,11 @@ Usage:
 
 Available Commands:
   add         Store a file or directory under a single namespace
-  get         Copy files from a given namespace to the current directory.
+  get         Copy files from a given namespace to the current directory
   help        Help about any command
-  list        List stored namespaces.
-  remove      Remove a filepath or namespace.
-  show        See the insides of a given namespace in a tree format.
+  list        List stored namespaces
+  remove      Remove a filepath or namespace
+  show        See the insides of a given namespace in a tree format
 
 Flags:
   -h, --help   help for scaff
@@ -34,7 +34,7 @@ Add expects to receive a path to directory or file, and namespace under which to
 
 ## List and Show
 
-List is used to get an overview over the namespaces you have.
+`list` is used to get an overview over the namespaces you have.
 
 `scaff list`
 
@@ -45,7 +45,7 @@ With `show` you can see the files from a specific namespace in a `tree` like for
 
 
 ## Removing files and namespaces
-With remove you are deleting given directory or filepath from a namespace, or the namespace itself.
+With `remove` you are deleting given directory or filepath from a namespace, or the namespace itself.
 
 If the command receives one argument, it is assumed that it has received namespace to delete.
 

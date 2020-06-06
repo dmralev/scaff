@@ -27,7 +27,7 @@ import (
 // getCmd represents the get command
 var getCmd = &cobra.Command{
 	Use:   "get [namespace]",
-	Short: "Copy files from a given namespace to the current directory.",
+	Short: "Copy files from a given namespace to the current directory",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("Get requires a namespace argument only.")

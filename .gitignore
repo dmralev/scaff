@@ -15,8 +15,5 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Not sure but adding it for now
-*.sum
-
 # Dependency directories (remove the comment below to include it)
 # vendor/

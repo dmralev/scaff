@@ -58,7 +58,7 @@ func Add(src, namespace string) (string, error) {
 	}
 
 	namespaceDir := path.Join(namespaceHome, namespace)
-	os.Mkdir(namespaceDir, srcInfo.Mode().Perm())
+	os.Mkdir(namespaceDir, 0777)
 	if err != nil {
 		return "", err
 	}

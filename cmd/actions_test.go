@@ -2,25 +2,23 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/dmralev/scaff/scaff"
+	homedir "github.com/mitchellh/go-homedir"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 	"testing"
-
-	"github.com/dmralev/scaff/scaff"
-	homedir "github.com/mitchellh/go-homedir"
 )
 
-// Quickfix
 var wd, _ = os.Getwd()
 var parentDir = path.Dir(wd)
 
 var home, homeErr = homedir.Dir()
 var namespaceHome = path.Join(home, ".scaff", "namespaces")
 
-func prepareAdd() {
-	// Quickfix
+func AddTestFile() {
 	scaff.Init()
 
 	// TODO: Needs nested directories
@@ -28,7 +26,21 @@ func prepareAdd() {
 	scaff.Add(testFile, "test")
 }
 
-func clearAdd() {
+func assertEqualStrings(x, y string, t *testing.T) {
+	if x == y {
+		return
+	}
+	t.Errorf("Expected %s but got %s", x, y)
+}
+
+func assertContains(x, y string, t *testing.T) {
+	if strings.Contains(x, y) {
+		return
+	}
+	t.Errorf("%s doesn't contain %s", x, y)
+}
+
+func clearTest() {
 	testNamespace := path.Join(namespaceHome, "test")
 	os.RemoveAll(testNamespace)
 }
@@ -36,32 +48,28 @@ func clearAdd() {
 //
 func TestAddFile(t *testing.T) {
 	filePath := path.Join(parentDir, "LICENSE")
+	buffer := bytes.NewBufferString("")
 
 	rootCmd.SetArgs([]string{"add", filePath, "test"})
-
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
-	clearAdd()
+	t.Cleanup(clearTest)
 }
 
-//
+// Basic test in which we don't care about
+// the false positives that the assertion can give
 func TestAddDir(t *testing.T) {
 	dirPath := path.Join(parentDir, "cmd")
+	buffer := bytes.NewBufferString("")
 
 	rootCmd.SetArgs([]string{"add", dirPath, "test"})
-
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
-	// TODO: It can give false positive when there is more than one file with the same name
-	// TODO: DRY the checks into a separate func?
 	testNamespace := path.Join(namespaceHome, "test")
 
+	// Assert that namespace exists
 	srcFiles, _ := ioutil.ReadDir(dirPath)
 	destFiles, err := ioutil.ReadDir(testNamespace)
 	if err != nil {
@@ -71,11 +79,20 @@ func TestAddDir(t *testing.T) {
 	// Let this snippet be remembered as the moment I found out
 	// that Go doesn't have .Contains for slices
 	// TODO: Should I make a helper file and extract such logic there?
+	fileCount, dirCount := 0, 0
 	for _, srcFile := range srcFiles {
 		isFound := false
+		if strings.HasPrefix(srcFile.Name(), ".") || strings.HasPrefix(srcFile.Name(), "/.") {
+			continue
+		}
 		for _, destFile := range destFiles {
 			if srcFile.Name() == destFile.Name() {
 				isFound = true
+				if srcFile.IsDir() {
+					dirCount += 1
+				} else {
+					fileCount += 1
+				}
 			}
 		}
 		if !isFound {
@@ -83,75 +100,66 @@ func TestAddDir(t *testing.T) {
 		}
 	}
 
-	// TODO: Count the files and dirs above, to check the print message as well
-	// You have the data you need
+	expectedString := fmt.Sprintf("%d files and %d directories stored under namespace %s\n", fileCount, dirCount, "test")
+	assertEqualStrings(buffer.String(), expectedString, t)
 
-	clearAdd()
+	t.Cleanup(clearTest)
 }
 
 //
 func TestAddValidation(t *testing.T) {
+	errMessage := "Error: Add requires a directory/file and a namespace arguments."
+	buffer := bytes.NewBufferString("")
 	dirPath := path.Join(parentDir, "cmd")
 
 	// Test with single param
 	rootCmd.SetArgs([]string{"add", dirPath})
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
-	errMessage := "Error: Add requires a directory/file and a namespace arguments."
-	if !strings.Contains(buffer.String(), errMessage) {
-		t.Errorf(buffer.String())
-	}
+	assertContains(buffer.String(), errMessage, t)
 
 	// Test with more than two params
-	rootCmd.SetArgs([]string{"add", dirPath, "test", "mistake", "another", "other"})
 	buffer = bytes.NewBufferString("")
+
+	rootCmd.SetArgs([]string{"add", dirPath, "test", "mistake", "another", "other"})
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
-	if !strings.Contains(buffer.String(), errMessage) {
-		t.Errorf(buffer.String())
-	}
 
-	clearAdd()
+	assertContains(buffer.String(), errMessage, t)
+
+	t.Cleanup(clearTest)
 }
 
 //
 func TestRemoveValidation(t *testing.T) {
-	prepareAdd()
+	errMessage := "Error: Add requires a directory/file or a namespace argument."
+	buffer := bytes.NewBufferString("")
+
+	AddTestFile()
 	dirPath := path.Join(parentDir, "cmd")
 
 	// Test with single param
 	rootCmd.SetArgs([]string{"remove"})
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
-	errMessage := "Error: Add requires a directory/file or a namespace argument."
-	if !strings.Contains(buffer.String(), errMessage) {
-		t.Errorf(buffer.String())
-	}
+	assertContains(buffer.String(), errMessage, t)
 
-	rootCmd.SetArgs([]string{"remove", dirPath, "test", "mistake", "another", "other"})
+	// Test with more than required params
 	buffer = bytes.NewBufferString("")
+	rootCmd.SetArgs([]string{"remove", dirPath, "test", "mistake", "another", "other"})
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
-	if !strings.Contains(buffer.String(), errMessage) {
-		t.Errorf(buffer.String())
-	}
 
-	clearAdd()
+	assertContains(buffer.String(), errMessage, t)
 
-	// TODO: Assert files are removed
+	t.Cleanup(clearTest)
 }
 
 // TODO Needs research on how to write to stdin when prompted
 func TestRemove(t *testing.T) {
-	// prepareAdd()
+	// AddTestFile()
 	//
 	// // Test with single file
 	// rootCmd.SetArgs([]string{"remove", "LICENSE", "test"})
@@ -166,7 +174,7 @@ func TestRemove(t *testing.T) {
 	// outBuffer.WriteString("n")
 	// fmt.Println("after write - >", outBuffer.String())
 	//
-	// clearAdd()
+	// clearTest()
 	//
 	// // Test with directory
 	// // rootCmd.SetArgs([]string{"remove"})
@@ -178,32 +186,26 @@ func TestRemove(t *testing.T) {
 
 // Super basic test
 func TestList(t *testing.T) {
-	prepareAdd()
+	AddTestFile()
+	buffer := bytes.NewBufferString("")
 
 	rootCmd.SetArgs([]string{"list"})
-
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
-	if !strings.Contains(buffer.String(), "test") {
-		t.FailNow()
-	}
+	assertContains(buffer.String(), "test", t)
 
-	clearAdd()
+	t.Cleanup(clearTest)
 }
 
 // Basic test
 func TestShow(t *testing.T) {
 	// TODO: Needs case for nested directories
-	prepareAdd()
+	AddTestFile()
+	buffer := bytes.NewBufferString("")
 
 	rootCmd.SetArgs([]string{"show", "test"})
-
-	buffer := bytes.NewBufferString("")
 	rootCmd.SetOut(buffer)
-
 	rootCmd.Execute()
 
 	testNamespace := path.Join(namespaceHome, "test")
@@ -212,19 +214,14 @@ func TestShow(t *testing.T) {
 	// TODO: It can give false positive when there is more than one file with the same name
 	namespaceFiles, _ := ioutil.ReadDir(testNamespace)
 	for _, file := range namespaceFiles {
-		if !strings.Contains(buffer.String(), file.Name()) {
-			t.FailNow()
-		}
+		assertContains(buffer.String(), file.Name(), t)
 	}
 
 	// Test actual pretty basic Tree formatting by directly calling Tree, no other way for now
 	expectedList, _ := scaff.Tree(testNamespace, "")
-	if buffer.String() != expectedList {
-		t.FailNow()
-	}
+	assertEqualStrings(buffer.String(), expectedList, t)
 
-	// TODO: Use the golang Clean method?
-	clearAdd()
+	t.Cleanup(clearTest)
 }
 
 // func TestGet(t *testing.T) {

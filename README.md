@@ -4,7 +4,7 @@ Store the files you use to bootstrap projects(docs, design notes, READMEs, commo
 # Installation
 ### Using go get
 
-`go get github.com/dmralev/scaff`
+`go get github.com/shiftingphotons/scaff`
 
 # Usage
 
@@ -28,31 +28,23 @@ Flags:
 One of the main reasons created this tool was to solve my need to easily reuse files when starting projects. Many times I would like to reuse documents, , and other commonly used things when starting a project. It's also forcing me to standardise how I approach starting a project projects, from the specs, to the architecture plans.
 
 ## Adding files
-Add expects to receive a path to directory or file, and namespace under which to store the added files.
-
+Add expects to receive a path to directory or file, and namespace under which to store the added files.  
 `scaff add [directory|filepath] [namespace] [flags]`
 
-## List and Show
-
-`list` is used to get an overview over the namespaces you have.
-
+## List and Show  
+`list` is used to get an overview over the namespaces you have.  
 `scaff list`
 
-With `show` you can see the files from a specific namespace in a `tree` like format.
-
+With `show` you can see the files from a specific namespace in a `tree` like format.  
 `scaff show [namespace]`
 
 
-
 ## Removing files and namespaces
-With `remove` you are deleting given directory or filepath from a namespace, or the namespace itself.
-
-If the command receives one argument, it is assumed that it has received namespace to delete.
-
+With `remove` you are deleting given directory or filepath from a namespace, or the namespace itself.  
+If the command receives one argument, it is assumed that it has received namespace to delete.  
 `scaff remove test_namespace`
 
-Two provided arguments means that a [file or directory] should be looked up in the given [namespace] and removed from there.
-
+Two provided arguments means that a [file or directory] should be looked up in the given [namespace] and removed from there.  
 `scaff remove README.md test_namespace`
 
 # Caveats
